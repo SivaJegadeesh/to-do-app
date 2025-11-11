@@ -217,41 +217,43 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
               const SizedBox(height: 16),
 
               // Secure Note
-              CheckboxListTile(
-                value: _isSecure,
-                onChanged: (value) async {
-                  if (value == true) {
-                    final password = await showDialog<String>(
-                      context: context,
-                      builder: (context) => const PasswordDialog(
-                        title: 'Set Password for Secure Note',
-                        isSetPassword: true,
-                      ),
-                    );
-                    if (password != null) {
-                      setState(() {
-                        _isSecure = true;
-                        _password = password;
-                      });
-                    }
-                  } else {
-                    setState(() {
-                      _isSecure = false;
-                      _password = null;
-                    });
-                  }
-                },
-                title: const Row(
-                  children: [
-                    Icon(Icons.lock, color: AppTheme.warningColor, size: 20),
-                    SizedBox(width: 8),
-                    Text(
+              Row(
+                children: [
+                  Checkbox(
+                    value: _isSecure,
+                    onChanged: (value) async {
+                      if (value == true) {
+                        final password = await showDialog<String>(
+                          context: context,
+                          builder: (context) => const PasswordDialog(
+                            title: 'Set Password',
+                            isSetPassword: true,
+                          ),
+                        );
+                        if (password != null) {
+                          setState(() {
+                            _isSecure = true;
+                            _password = password;
+                          });
+                        }
+                      } else {
+                        setState(() {
+                          _isSecure = false;
+                          _password = null;
+                        });
+                      }
+                    },
+                  ),
+                  const Icon(Icons.lock,
+                      color: AppTheme.warningColor, size: 20),
+                  const SizedBox(width: 8),
+                  const Flexible(
+                    child: Text(
                       'Secure Note',
                       style: TextStyle(fontWeight: FontWeight.w500),
                     ),
-                  ],
-                ),
-                contentPadding: EdgeInsets.zero,
+                  ),
+                ],
               ),
               const SizedBox(height: 24),
 

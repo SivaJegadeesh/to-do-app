@@ -60,129 +60,273 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   Widget _buildHeader() {
+    final isLargeScreen = !AppTheme.isMobile(context);
+    final padding = AppTheme.getResponsivePadding(context);
+    
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(padding),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.white,
+            AppTheme.lightGrey,
+          ],
+        ),
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(30),
+          bottomRight: Radius.circular(30),
+        ),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              const Text(
-                'TaskFlow',
-                style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.primaryColor,
-                ),
-              ),
-              const Spacer(),
-              Container(
-                width: 160,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade100,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: TabBar(
-                  controller: _tabController,
-                  indicator: BoxDecoration(
-                    color: AppTheme.primaryColor,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  indicatorSize: TabBarIndicatorSize.tab,
-                  labelColor: Colors.white,
-                  unselectedLabelColor: Colors.grey.shade600,
-                  dividerColor: Colors.transparent,
-                  labelStyle: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                  ),
-                  tabs: const [
-                    Tab(text: 'Tasks'),
-                    Tab(text: 'Stats'),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Stay organized and productive',
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey.shade600,
+          if (isLargeScreen)
+            Row(
+              children: [
+                _buildWelcomeSection(),
+                const Spacer(),
+                _buildTabSection(),
+              ],
+            )
+          else
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildWelcomeSection(),
+                const SizedBox(height: 20),
+                Center(child: _buildTabSection()),
+              ],
             ),
-          ),
         ],
       ),
     );
   }
+  
+  Widget _buildWelcomeSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppTheme.primaryColor.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: const Icon(
+                Icons.task_alt_rounded,
+                color: AppTheme.primaryColor,
+                size: 24,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Text(
+              'TaskFlow',
+              style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                color: AppTheme.primaryColor,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'Stay organized and productive',
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            fontSize: AppTheme.getResponsiveFontSize(context, 16),
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          'Welcome back! You have ${_getTaskCount()} tasks today',
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            color: AppTheme.primaryColor,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
+    );
+  }
+  
+  Widget _buildTabSection() {
+    return Container(
+      width: AppTheme.isMobile(context) ? double.infinity : 200,
+      height: 50,
+      decoration: BoxDecoration(
+        color: AppTheme.lightGrey,
+        borderRadius: BorderRadius.circular(25),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: TabBar(
+        controller: _tabController,
+        indicator: BoxDecoration(
+          color: AppTheme.primaryColor,
+          borderRadius: BorderRadius.circular(25),
+          boxShadow: [
+            BoxShadow(
+              color: AppTheme.primaryColor.withOpacity(0.3),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        indicatorSize: TabBarIndicatorSize.tab,
+        labelColor: Colors.white,
+        unselectedLabelColor: Colors.grey.shade600,
+        dividerColor: Colors.transparent,
+        labelStyle: const TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+        ),
+        tabs: const [
+          Tab(text: 'Tasks'),
+          Tab(text: 'Analytics'),
+        ],
+      ),
+    );
+  }
+  
+  int _getTaskCount() {
+    try {
+      final box = Boxes.getTasks();
+      return box.values.where((task) => !task.isCompleted).length;
+    } catch (e) {
+      return 0;
+    }
+  }
 
   Widget _buildSearchAndFilters() {
+    final padding = AppTheme.getResponsivePadding(context);
+    
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: EdgeInsets.symmetric(horizontal: padding, vertical: 16),
       child: Column(
         children: [
-          TextField(
-            controller: _searchController,
-            decoration: InputDecoration(
-              hintText: 'Search tasks...',
-              prefixIcon: const Icon(Icons.search),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(16),
-                borderSide: BorderSide.none,
-              ),
-              filled: true,
-              fillColor: Colors.white,
+          // Enhanced search bar
+          Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
-            onChanged: (value) {
-              setState(() {
-                _searchQuery = value.toLowerCase();
-              });
-            },
-          ),
-          const SizedBox(height: 16),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: _filters.map((filter) {
-                final isSelected = _selectedFilter == filter;
-                return GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _selectedFilter = filter;
-                    });
-                  },
-                  child: Container(
-                    margin: const EdgeInsets.only(right: 8),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      color: isSelected
-                          ? AppTheme.primaryColor
-                          : Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: isSelected
-                            ? AppTheme.primaryColor
-                            : Colors.grey.shade300,
-                      ),
-                    ),
-                    child: Text(
-                      filter,
-                      style: TextStyle(
-                        color: isSelected
-                            ? Colors.white
-                            : Colors.grey.shade700,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
+            child: TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                hintText: 'Search tasks, categories, or descriptions...',
+                hintStyle: TextStyle(
+                  color: Colors.grey.shade500,
+                  fontSize: 14,
+                ),
+                prefixIcon: Container(
+                  padding: const EdgeInsets.all(12),
+                  child: Icon(
+                    Icons.search_rounded,
+                    color: Colors.grey.shade400,
+                    size: 20,
                   ),
-                );
-              }).toList(),
+                ),
+                suffixIcon: _searchQuery.isNotEmpty
+                    ? IconButton(
+                        icon: Icon(
+                          Icons.clear_rounded,
+                          color: Colors.grey.shade400,
+                          size: 20,
+                        ),
+                        onPressed: () {
+                          _searchController.clear();
+                          setState(() {
+                            _searchQuery = '';
+                          });
+                        },
+                      )
+                    : null,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(20),
+                  borderSide: BorderSide.none,
+                ),
+                filled: true,
+                fillColor: Colors.white,
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 16,
+                ),
+              ),
+              onChanged: (value) {
+                setState(() {
+                  _searchQuery = value.toLowerCase();
+                });
+              },
             ),
+          ),
+          
+          const SizedBox(height: 20),
+          
+          // Enhanced filter chips
+          Row(
+            children: [
+              Icon(
+                Icons.filter_list_rounded,
+                color: Colors.grey.shade600,
+                size: 20,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'Filter:',
+                style: TextStyle(
+                  color: Colors.grey.shade600,
+                  fontWeight: FontWeight.w500,
+                  fontSize: 14,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: _filters.map((filter) {
+                      final isSelected = _selectedFilter == filter;
+                      return Container(
+                        margin: const EdgeInsets.only(right: 8),
+                        child: FilterChip(
+                          selected: isSelected,
+                          label: Text(
+                            filter,
+                            style: TextStyle(
+                              color: isSelected
+                                  ? Colors.white
+                                  : AppTheme.darkGrey,
+                              fontWeight: FontWeight.w500,
+                              fontSize: 12,
+                            ),
+                          ),
+                          backgroundColor: Colors.white,
+                          selectedColor: AppTheme.primaryColor,
+                          checkmarkColor: Colors.white,
+                          side: BorderSide(
+                            color: isSelected
+                                ? AppTheme.primaryColor
+                                : Colors.grey.shade300,
+                          ),
+                          onSelected: (selected) {
+                            setState(() {
+                              _selectedFilter = filter;
+                            });
+                          },
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -288,46 +432,92 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   Widget _buildEmptyState() {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.task_alt,
-            size: 80,
-            color: Colors.grey.shade400,
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'No tasks found',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.grey.shade600,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Add a new task to get started',
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey.shade500,
-            ),
-          ),
-          const SizedBox(height: 24),
-          ElevatedButton.icon(
-            onPressed: _showAddTaskDialog,
-            icon: const Icon(Icons.add),
-            label: const Text('Add Your First Task'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primaryColor,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(
-                horizontal: 24,
-                vertical: 12,
+      child: Padding(
+        padding: EdgeInsets.all(AppTheme.getResponsivePadding(context)),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 120,
+              height: 120,
+              decoration: BoxDecoration(
+                color: AppTheme.lightGrey,
+                borderRadius: BorderRadius.circular(60),
+                border: Border.all(
+                  color: Colors.grey.shade200,
+                  width: 2,
+                ),
+              ),
+              child: Icon(
+                Icons.task_alt_rounded,
+                size: 60,
+                color: Colors.grey.shade400,
               ),
             ),
-          ),
-        ],
+            const SizedBox(height: 24),
+            Text(
+              _searchQuery.isNotEmpty
+                  ? 'No tasks match your search'
+                  : _selectedFilter != 'All'
+                      ? 'No ${_selectedFilter.toLowerCase()} tasks'
+                      : 'No tasks yet',
+              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                color: Colors.grey.shade600,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              _searchQuery.isNotEmpty
+                  ? 'Try adjusting your search terms'
+                  : _selectedFilter != 'All'
+                      ? 'Try changing your filter or add a new task'
+                      : 'Create your first task to get organized',
+              style: Theme.of(context).textTheme.bodyMedium,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 32),
+            if (_searchQuery.isEmpty)
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppTheme.primaryColor.withOpacity(0.3),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: ElevatedButton.icon(
+                  onPressed: _showAddTaskDialog,
+                  icon: const Icon(Icons.add_rounded, size: 20),
+                  label: Text(
+                    _selectedFilter != 'All'
+                        ? 'Add New Task'
+                        : 'Create Your First Task',
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 32,
+                      vertical: 16,
+                    ),
+                  ),
+                ),
+              ),
+            if (_searchQuery.isNotEmpty)
+              TextButton.icon(
+                onPressed: () {
+                  _searchController.clear();
+                  setState(() {
+                    _searchQuery = '';
+                  });
+                },
+                icon: const Icon(Icons.clear_rounded),
+                label: const Text('Clear Search'),
+              ),
+          ],
+        ),
       ),
     );
   }

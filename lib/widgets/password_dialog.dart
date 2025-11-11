@@ -29,7 +29,12 @@ class _PasswordDialogState extends State<PasswordDialog> {
         children: [
           const Icon(Icons.lock, color: AppTheme.primaryColor),
           const SizedBox(width: 8),
-          Text(widget.title),
+          Expanded(
+            child: Text(
+              widget.title,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
         ],
       ),
       content: Column(
