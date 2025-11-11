@@ -39,6 +39,7 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
 
   bool _isSecure = false;
   String? _password;
+  bool _isStarred = false;
 
   @override
   void initState() {
@@ -50,6 +51,7 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
       _selectedPriority = widget.task!.priority;
       _selectedCategory = widget.task!.category;
       _isSecure = widget.task!.isSecure;
+      _isStarred = widget.task!.isStarred;
     }
   }
 
@@ -255,6 +257,29 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
                   ),
                 ],
               ),
+              const SizedBox(height: 16),
+
+              // Star option
+              Row(
+                children: [
+                  Checkbox(
+                    value: _isStarred,
+                    onChanged: (value) {
+                      setState(() {
+                        _isStarred = value ?? false;
+                      });
+                    },
+                  ),
+                  const Icon(Icons.star, color: AppTheme.warningColor, size: 20),
+                  const SizedBox(width: 8),
+                  const Flexible(
+                    child: Text(
+                      'Mark as important (starred)',
+                      style: TextStyle(fontWeight: FontWeight.w500),
+                    ),
+                  ),
+                ],
+              ),
               const SizedBox(height: 24),
 
               // Buttons
@@ -325,6 +350,7 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
       passwordHash: _isSecure && _password != null
           ? PasswordUtils.hashPassword(_password!)
           : null,
+      isStarred: _isStarred,
     );
 
     Navigator.pop(context, task);

@@ -26,13 +26,14 @@ class TaskAdapter extends TypeAdapter<Task> {
       description: fields[6] as String?,
       isSecure: fields[7] as bool? ?? false,
       passwordHash: fields[8] as String?,
+      isStarred: fields[9] as bool? ?? false,
     );
   }
 
   @override
   void write(BinaryWriter writer, Task obj) {
     writer
-      ..writeByte(9)
+      ..writeByte(10)
       ..writeByte(0)
       ..write(obj.title)
       ..writeByte(1)
@@ -50,7 +51,9 @@ class TaskAdapter extends TypeAdapter<Task> {
       ..writeByte(7)
       ..write(obj.isSecure)
       ..writeByte(8)
-      ..write(obj.passwordHash);
+      ..write(obj.passwordHash)
+      ..writeByte(9)
+      ..write(obj.isStarred);
   }
 
   @override

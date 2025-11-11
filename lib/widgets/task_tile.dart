@@ -13,24 +13,30 @@ class TaskTile extends StatelessWidget {
 
   Color _getPriorityColor() {
     switch (task.priority) {
-      case 2: return AppTheme.errorColor;
-      case 1: return AppTheme.warningColor;
-      default: return Colors.grey;
+      case 2:
+        return AppTheme.errorColor;
+      case 1:
+        return AppTheme.warningColor;
+      default:
+        return Colors.grey;
     }
   }
 
   String _getPriorityText() {
     switch (task.priority) {
-      case 2: return 'High';
-      case 1: return 'Medium';
-      default: return 'Low';
+      case 2:
+        return 'High';
+      case 1:
+        return 'Medium';
+      default:
+        return 'Low';
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final isOverdue = task.dueDate != null && 
-        task.dueDate!.isBefore(DateTime.now()) && 
+    final isOverdue = task.dueDate != null &&
+        task.dueDate!.isBefore(DateTime.now()) &&
         !task.isCompleted;
 
     return Container(
@@ -43,43 +49,14 @@ class TaskTile extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           child: Padding(
             padding: const EdgeInsets.all(16),
-            child: Row(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                GestureDetector(
-                  onTap: () {
-                    task.isCompleted = !task.isCompleted;
-                    task.save();
-                  },
-                  child: Container(
-                    width: 24,
-                    height: 24,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: task.isCompleted 
-                            ? AppTheme.successColor 
-                            : _getPriorityColor(),
-                        width: 2,
-                      ),
-                      color: task.isCompleted 
-                          ? AppTheme.successColor 
-                          : Colors.transparent,
-                    ),
-                    child: task.isCompleted
-                        ? const Icon(
-                            Icons.check,
-                            size: 16,
-                            color: Colors.white,
-                          )
-                        : null,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
+                // Title + Star
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
                         task.title,
                         style: TextStyle(
                           fontSize: 16,
@@ -94,112 +71,157 @@ class TaskTile extends StatelessWidget {
                                   : Colors.black87,
                         ),
                       ),
-                      if (task.description?.isNotEmpty == true && !task.isSecure) ...[
-                        const SizedBox(height: 4),
+                    ),
+                    if (task.isStarred)
+                      const Icon(
+                        Icons.star,
+                        color: AppTheme.warningColor,
+                        size: 20,
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+
+                // Description or Secure Note
+                if (task.description?.isNotEmpty == true && !task.isSecure)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Text(
+                      task.description!,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey.shade600,
+                        decoration: task.isCompleted
+                            ? TextDecoration.lineThrough
+                            : TextDecoration.none,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                if (task.isSecure)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Row(
+                      children: [
+                        Icon(Icons.lock,
+                            size: 14, color: AppTheme.warningColor),
+                        const SizedBox(width: 4),
                         Text(
-                          task.description!,
+                          'Secure Note',
                           style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey.shade600,
-                            decoration: task.isCompleted
-                                ? TextDecoration.lineThrough
-                                : TextDecoration.none,
+                            fontSize: 12,
+                            color: AppTheme.warningColor,
+                            fontWeight: FontWeight.w500,
                           ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
                         ),
                       ],
-                      if (task.isSecure) ...[
-                        const SizedBox(height: 4),
-                        Row(
+                    ),
+                  ),
+                const SizedBox(height: 12),
+
+                // Bottom Row: Priority, Category, Due Date, Check, Star, Delete
+                Row(
+                  children: [
+                    // Priority Label
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: _getPriorityColor().withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: _getPriorityColor().withOpacity(0.3),
+                        ),
+                      ),
+                      child: Text(
+                        _getPriorityText(),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: _getPriorityColor(),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+
+                    // Category Label
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: AppTheme.primaryColor.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        task.category,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: AppTheme.primaryColor,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+
+                    // Due Date
+                    if (task.dueDate != null)
+                      Expanded(
+                        child: Row(
                           children: [
-                            Icon(
-                              Icons.lock,
-                              size: 14,
-                              color: AppTheme.warningColor,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              'Secure Note',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: AppTheme.warningColor,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: _getPriorityColor().withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color: _getPriorityColor().withOpacity(0.3),
-                              ),
-                            ),
-                            child: Text(
-                              _getPriorityText(),
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: _getPriorityColor(),
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: AppTheme.primaryColor.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(
-                              task.category,
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: AppTheme.primaryColor,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
-                          if (task.dueDate != null) ...[
-                            const SizedBox(width: 8),
                             Icon(
                               Icons.schedule,
                               size: 14,
-                              color: isOverdue 
-                                  ? AppTheme.errorColor 
+                              color: isOverdue
+                                  ? AppTheme.errorColor
                                   : Colors.grey.shade600,
                             ),
                             const SizedBox(width: 4),
-                            Text(
-                              DateFormat('MMM dd').format(task.dueDate!),
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: isOverdue 
-                                    ? AppTheme.errorColor 
-                                    : Colors.grey.shade600,
+                            Flexible(
+                              child: Text(
+                                DateFormat('MMM dd').format(task.dueDate!),
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: isOverdue
+                                      ? AppTheme.errorColor
+                                      : Colors.grey.shade600,
+                                ),
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
                           ],
-                        ],
+                        ),
                       ),
-                    ],
-                  ),
-                ),
-                IconButton(
-                  icon: Icon(
-                    Icons.delete_outline,
-                    color: Colors.grey.shade400,
-                  ),
-                  onPressed: () => _showDeleteDialog(context),
+
+                    // Action Buttons
+                    IconButton(
+                      icon: Icon(
+                        task.isStarred ? Icons.star : Icons.star_border,
+                        color: task.isStarred
+                            ? AppTheme.warningColor
+                            : Colors.grey.shade400,
+                        size: 20,
+                      ),
+                      onPressed: () {
+                        task.isStarred = !task.isStarred;
+                        task.save();
+                      },
+                      constraints:
+                          const BoxConstraints(minWidth: 32, minHeight: 32),
+                      padding: const EdgeInsets.all(4),
+                    ),
+                    IconButton(
+                      icon: Icon(
+                        Icons.delete_outline,
+                        color: Colors.grey.shade400,
+                        size: 20,
+                      ),
+                      onPressed: () => _showDeleteDialog(context),
+                      constraints:
+                          const BoxConstraints(minWidth: 32, minHeight: 32),
+                      padding: const EdgeInsets.all(4),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -218,8 +240,9 @@ class TaskTile extends StatelessWidget {
           isSetPassword: false,
         ),
       );
-      
-      if (password != null && PasswordUtils.verifyPassword(password, task.passwordHash!)) {
+
+      if (password != null &&
+          PasswordUtils.verifyPassword(password, task.passwordHash!)) {
         if (onTap != null) onTap!();
       } else if (password != null) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -251,7 +274,10 @@ class TaskTile extends StatelessWidget {
               task.delete();
               Navigator.pop(context);
             },
-            child: const Text('Delete', style: TextStyle(color: AppTheme.errorColor)),
+            child: const Text(
+              'Delete',
+              style: TextStyle(color: AppTheme.errorColor),
+            ),
           ),
         ],
       ),

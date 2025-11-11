@@ -25,7 +25,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
   }
 
   @override
@@ -42,6 +42,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 controller: _tabController,
                 children: [
                   _buildTasksList(),
+                  _buildStarredTasks(),
                   _buildStatsView(),
                 ],
               ),
@@ -153,7 +154,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   
   Widget _buildTabSection() {
     return Container(
-      width: AppTheme.isMobile(context) ? double.infinity : 200,
+      width: AppTheme.isMobile(context) ? double.infinity : 280,
       height: 50,
       decoration: BoxDecoration(
         color: AppTheme.lightGrey,
@@ -178,11 +179,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         unselectedLabelColor: Colors.grey.shade600,
         dividerColor: Colors.transparent,
         labelStyle: const TextStyle(
-          fontSize: 14,
+          fontSize: 12,
           fontWeight: FontWeight.w600,
         ),
         tabs: const [
-          Tab(text: 'Tasks'),
+          Tab(text: 'All Tasks'),
+          Tab(text: 'Starred'),
           Tab(text: 'Analytics'),
         ],
       ),
@@ -355,6 +357,120 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           },
         );
       },
+    );
+  }
+
+  Widget _buildStarredTasks() {
+    return ValueListenableBuilder(
+      valueListenable: Boxes.getTasks().listenable(),
+      builder: (context, Box<Task> box, _) {
+        final allTasks = box.values.toList().cast<Task>();
+        final starredTasks = allTasks.where((task) => task.isStarred).toList();
+        
+        // Sort starred tasks by priority and due date
+        starredTasks.sort((a, b) {
+          if (a.isCompleted != b.isCompleted) {
+            return a.isCompleted ? 1 : -1;
+          }
+          if (a.priority != b.priority) {
+            return b.priority.compareTo(a.priority);
+          }
+          if (a.dueDate != null && b.dueDate != null) {
+            return a.dueDate!.compareTo(b.dueDate!);
+          }
+          return a.createdAt.compareTo(b.createdAt);
+        });
+
+        if (starredTasks.isEmpty) {
+          return _buildStarredEmptyState();
+        }
+
+        return ListView.builder(
+          padding: EdgeInsets.fromLTRB(
+            AppTheme.getResponsivePadding(context),
+            16,
+            AppTheme.getResponsivePadding(context),
+            100,
+          ),
+          itemCount: starredTasks.length,
+          itemBuilder: (context, index) {
+            return TaskTile(
+              task: starredTasks[index],
+              onTap: () => _showTaskDetails(starredTasks[index]),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildStarredEmptyState() {
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.all(AppTheme.getResponsivePadding(context)),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 120,
+              height: 120,
+              decoration: BoxDecoration(
+                color: AppTheme.warningColor.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(60),
+                border: Border.all(
+                  color: AppTheme.warningColor.withOpacity(0.3),
+                  width: 2,
+                ),
+              ),
+              child: const Icon(
+                Icons.star_outline_rounded,
+                size: 60,
+                color: AppTheme.warningColor,
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'No Starred Tasks',
+              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                color: Colors.grey.shade600,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Star important tasks to keep them at your fingertips',
+              style: Theme.of(context).textTheme.bodyMedium,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 32),
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppTheme.primaryColor.withOpacity(0.3),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  _tabController.animateTo(0); // Go to All Tasks tab
+                },
+                icon: const Icon(Icons.list_rounded, size: 20),
+                label: const Text('View All Tasks'),
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 32,
+                    vertical: 16,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

@@ -31,6 +31,9 @@ class Task extends HiveObject {
   @HiveField(8)
   String? passwordHash;
 
+  @HiveField(9)
+  bool isStarred;
+
   Task({
     required this.title,
     this.isCompleted = false,
@@ -41,5 +44,6 @@ class Task extends HiveObject {
     this.description,
     this.isSecure = false,
     this.passwordHash,
+    this.isStarred = false,
   }) : createdAt = createdAt ?? DateTime.now();
 }
